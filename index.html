@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0806">
+<title>Ironveil — Tactical Duel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=VT323&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- LOBBY -->
+<div id="lobby" class="screen active">
+  <div class="lobby-bg"></div>
+  <div class="lobby-content">
+    <div class="emblem">
+      <svg viewBox="0 0 100 100" width="72" height="72" aria-hidden="true">
+        <polygon points="50,6 88,28 88,72 50,94 12,72 12,28" fill="none" stroke="currentColor" stroke-width="2"/>
+        <polygon points="50,22 74,36 74,64 50,78 26,64 26,36" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M50 32 L50 68 M38 42 L62 42 M38 58 L62 58" stroke="currentColor" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="title-eyebrow">CHAPTER VIII · DIRECTIONAL STEEL</div>
+    <h1 class="game-title">Welcome to <span class="game-title-brand">IRONVEIL</span></h1>
+    <div class="subtitle">a tactical duel of dice and steel</div>
+
+    <div class="lobby-panel">
+      <div class="rule-row"><span class="rune">⚔</span> <b>Fighter</b> — HP 10, DMG 2, <em>halves damage taken</em>.</div>
+      <div class="rule-row"><span class="rune">✷</span> <b>Mage</b> — HP 10, DMG 3 (range 2 line), <em>Heal 3</em>.</div>
+      <div class="rule-row"><span class="rune">✦</span> Each hero rolls its own dice. Tap → Roll → Move.</div>
+      <div class="rule-row"><span class="rune">✦</span> End adjacent (fighter) or in-line (mage) → combat.</div>
+    </div>
+
+    <div class="lobby-buttons">
+      <button id="btn-play-ai" class="btn-primary">
+        <span class="btn-label">PLAY WITH AUDWEAK</span>
+        <span class="btn-shine"></span>
+      </button>
+      <button id="btn-create-game" class="btn-secondary" disabled>
+        <span class="btn-label">CREATE GAME</span>
+        <span class="btn-meta">coming soon</span>
+      </button>
+
+      <div class="lobby-joinrow">
+        <input id="input-gamecode" class="lobby-input" type="text"
+               placeholder="Enter Game Code"
+               aria-label="Enter Game Code"
+               disabled>
+        <button id="btn-join-game" class="btn-secondary" disabled>
+          <span class="btn-label">JOIN</span>
+        </button>
+      </div>
+
+      <button id="btn-exit-game" class="btn-tertiary">
+        <span class="btn-label">EXIT GAME</span>
+      </button>
+    </div>
+
+    <div class="lobby-footer">
+      <span>v8.2</span>
+      <span class="dot">·</span>
+      <span>ADJACENCY TRIGGERS · DEFLECTION</span>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="screen">
+
+  <div class="hud-top">
+    <div class="hud-top-row">
+      <button class="btn-exit-lobby" id="btn-exit-lobby" title="Exit to lobby">
+        <span class="exit-glyph">◀</span>
+        <span class="exit-label">LOBBY</span>
+      </button>
+
+      <div class="turn-indicator" id="turn-indicator">
+        <div class="turn-dot"></div>
+        <div class="turn-text">YOUR TURN</div>
+      </div>
+
+      <div class="dice-panel">
+        <div class="dice-display" id="dice-display">
+          <div class="dice-cube" id="dice-cube">
+            <div class="dice-face f1"></div>
+          </div>
+        </div>
+        <div class="dice-meta">
+          <button class="btn-dice" id="btn-dice">ROLL</button>
+          <div class="moves-left" id="moves-left">— / —</div>
+        </div>
+      </div>
+
+      <button class="btn-endturn" id="btn-endturn">END<br>TURN</button>
+    </div>
+
+    <div class="inspector inspector-active" id="inspector-active" data-side="none">
+      <div class="insp-eyebrow">ACTIVE UNIT</div>
+      <div class="insp-portrait" id="insp-portrait">
+        <svg viewBox="0 0 40 40" width="28" height="28" aria-hidden="true">
+          <polygon points="20,3 36,12 36,28 20,37 4,28 4,12" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M20 12 L20 28 M14 16 L26 16 M14 24 L26 24" stroke="currentColor" stroke-width="1.4" fill="none"/>
+        </svg>
+      </div>
+      <div class="insp-name" id="insp-name">—</div>
+      <div class="insp-divider"></div>
+      <div class="insp-stats" id="insp-stats">
+        <div class="insp-stat"><span class="insp-stat-k">HP</span><span class="insp-stat-v" id="insp-hp">— / —</span></div>
+        <div class="insp-stat-bar"><div class="insp-stat-bar-fill" id="insp-hp-fill"></div></div>
+        <div class="insp-stat"><span class="insp-stat-k">DMG</span><span class="insp-stat-v" id="insp-dmg">—</span></div>
+        <div class="insp-stat"><span class="insp-stat-k">RANGE</span><span class="insp-stat-v" id="insp-range">—</span></div>
+        <div class="insp-stat"><span class="insp-stat-k" id="insp-4k">HEAL</span><span class="insp-stat-v" id="insp-4v">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="arena">
+      <div class="arena-banner arena-banner-tl" aria-hidden="true">
+        <svg viewBox="0 0 40 110" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="bannerBlue" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#2c4f7a"/>
+              <stop offset="0.5" stop-color="#1b3660"/>
+              <stop offset="1" stop-color="#0e1f3a"/>
+            </linearGradient>
+          </defs>
+          <path d="M4 0 L36 0 L36 92 L20 108 L4 92 Z" fill="url(#bannerBlue)" stroke="#0a1426" stroke-width="1"/>
+          <path d="M4 0 L36 0 L36 6 L4 6 Z" fill="#d9a94a" opacity="0.55"/>
+          <path d="M20 22 L20 58 M14 30 L26 30 M14 46 L26 46" stroke="#d9a94a" stroke-width="1.4" fill="none" opacity="0.85"/>
+          <circle cx="20" cy="72" r="3" fill="#d9a94a" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="arena-banner arena-banner-bl" aria-hidden="true">
+        <svg viewBox="0 0 40 110" preserveAspectRatio="xMidYMid meet">
+          <path d="M4 0 L36 0 L36 92 L20 108 L4 92 Z" fill="url(#bannerBlue)" stroke="#0a1426" stroke-width="1"/>
+          <path d="M4 0 L36 0 L36 6 L4 6 Z" fill="#d9a94a" opacity="0.55"/>
+          <path d="M20 22 L20 58 M14 30 L26 30 M14 46 L26 46" stroke="#d9a94a" stroke-width="1.4" fill="none" opacity="0.85"/>
+          <circle cx="20" cy="72" r="3" fill="#d9a94a" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="arena-banner arena-banner-tr" aria-hidden="true">
+        <svg viewBox="0 0 40 110" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="bannerRed" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#8a2b1e"/>
+              <stop offset="0.5" stop-color="#5e1a10"/>
+              <stop offset="1" stop-color="#2e0a06"/>
+            </linearGradient>
+          </defs>
+          <path d="M4 0 L36 0 L36 92 L20 108 L4 92 Z" fill="url(#bannerRed)" stroke="#1a0503" stroke-width="1"/>
+          <path d="M4 0 L36 0 L36 6 L4 6 Z" fill="#d9a94a" opacity="0.55"/>
+          <path d="M20 20 L20 60 M14 26 L26 26 M14 54 L26 54 M14 40 L26 40 M15 33 L25 47 M25 33 L15 47" stroke="#d9a94a" stroke-width="1.3" fill="none" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="arena-banner arena-banner-br" aria-hidden="true">
+        <svg viewBox="0 0 40 110" preserveAspectRatio="xMidYMid meet">
+          <path d="M4 0 L36 0 L36 92 L20 108 L4 92 Z" fill="url(#bannerRed)" stroke="#1a0503" stroke-width="1"/>
+          <path d="M4 0 L36 0 L36 6 L4 6 Z" fill="#d9a94a" opacity="0.55"/>
+          <path d="M20 20 L20 60 M14 26 L26 26 M14 54 L26 54 M14 40 L26 40 M15 33 L25 47 M25 33 L15 47" stroke="#d9a94a" stroke-width="1.3" fill="none" opacity="0.85"/>
+        </svg>
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Floating action dock (heal button for mage) -->
+  <div class="action-dock" id="action-dock">
+    <button class="action-btn attack" id="btn-attack-action" hidden>
+      <span class="action-glyph">⚔</span>
+      <span>ATTACK</span>
+    </button>
+    <button class="action-btn heal" id="btn-heal" hidden>
+      <span class="action-glyph">✚</span>
+      <span>HEAL</span>
+    </button>
+  </div>
+
+  <div class="hud-bottom">
+    <div class="inspector inspector-terrain" id="inspector-terrain">
+      <div class="insp-row-top">
+        <div class="insp-col">
+          <div class="insp-eyebrow">MOVE</div>
+          <div class="insp-big" id="insp-move">— / —</div>
+        </div>
+      </div>
+      <div class="insp-divider"></div>
+      <div class="insp-col">
+        <div class="insp-eyebrow">TERRAIN</div>
+        <div class="insp-terrain-swatch" id="insp-terrain-swatch">
+          <svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
+            <rect x="2" y="2" width="36" height="36" fill="#2a2218" stroke="#5a4830" stroke-width="1"/>
+            <path d="M6 14 L14 10 L22 14 L30 10 L34 14 M6 22 L14 18 L22 22 L30 18 L34 22 M6 30 L14 26 L22 30 L30 26 L34 30" stroke="#3a2d1f" stroke-width="0.8" fill="none"/>
+          </svg>
+        </div>
+        <div class="insp-small" id="insp-terrain-name">Normal</div>
+      </div>
+      <div class="insp-divider"></div>
+      <div class="insp-col">
+        <div class="insp-eyebrow">DEFENSE</div>
+        <div class="insp-shield">
+          <svg viewBox="0 0 40 40" width="28" height="28" aria-hidden="true">
+            <path d="M20 4 L34 10 L34 22 C34 30 28 34 20 36 C12 34 6 30 6 22 L6 10 Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div class="insp-small" id="insp-defense">—</div>
+      </div>
+    </div>
+
+    <div class="side side-player">
+      <div class="unit-row" id="unit-p-fighter" data-unit="p-fighter">
+        <div class="unit-glyph fighter">⚔</div>
+        <div class="unit-stats">
+          <div class="unit-name">Fighter</div>
+          <div class="hp-bar"><div class="hp-fill" data-hp="p-fighter"></div></div>
+          <div class="hp-text" data-hptext="p-fighter">10/10</div>
+        </div>
+      </div>
+      <div class="unit-row" id="unit-p-mage" data-unit="p-mage">
+        <div class="unit-glyph mage">✷</div>
+        <div class="unit-stats">
+          <div class="unit-name">Mage</div>
+          <div class="hp-bar"><div class="hp-fill" data-hp="p-mage"></div></div>
+          <div class="hp-text" data-hptext="p-mage">10/10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="log" id="log">The torches hiss.</div>
+
+    <div class="side side-enemy">
+      <div class="unit-row" id="unit-e-fighter" data-unit="e-fighter">
+        <div class="unit-stats right">
+          <div class="unit-name">Fighter</div>
+          <div class="hp-bar"><div class="hp-fill enemy" data-hp="e-fighter"></div></div>
+          <div class="hp-text" data-hptext="e-fighter">10/10</div>
+        </div>
+        <div class="unit-glyph fighter enemy">⚔</div>
+      </div>
+      <div class="unit-row" id="unit-e-mage" data-unit="e-mage">
+        <div class="unit-stats right">
+          <div class="unit-name">Mage</div>
+          <div class="hp-bar"><div class="hp-fill enemy" data-hp="e-mage"></div></div>
+          <div class="hp-text" data-hptext="e-mage">10/10</div>
+        </div>
+        <div class="unit-glyph mage enemy">✷</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: Attack / Skip -->
+<div id="modal-attack" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-eyebrow">ENGAGEMENT</div>
+    <h3 class="modal-title" id="attack-title">STRIKE?</h3>
+    <div class="modal-sub" id="attack-sub">Your blade is in reach.</div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" id="btn-attack">
+        <span class="mb-glyph">⚔</span>
+        <span class="mb-label">ATTACK</span>
+        <span class="mb-sub" id="attack-dmg">— DMG</span>
+      </button>
+      <button class="modal-btn ghost" id="btn-skip">
+        <span class="mb-glyph">↩</span>
+        <span class="mb-label">SKIP</span>
+        <span class="mb-sub">no strike</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Heal target -->
+<div id="modal-heal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-eyebrow">MENDING LIGHT</div>
+    <h3 class="modal-title">HEAL WHOM?</h3>
+    <div class="modal-sub">Restores 3 HP. Ends the mage's action.</div>
+    <div class="modal-actions" id="heal-targets"></div>
+    <button class="modal-cancel" id="btn-heal-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- MODAL: Exit to lobby confirmation -->
+<div id="modal-exit" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-eyebrow">LEAVE MATCH</div>
+    <h3 class="modal-title">EXIT?</h3>
+    <div class="modal-sub">Your current match will end.</div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" id="btn-exit-no">
+        <span class="mb-glyph">↩</span>
+        <span class="mb-label">NO</span>
+        <span class="mb-sub">stay</span>
+      </button>
+      <button class="modal-btn primary" id="btn-exit-yes">
+        <span class="mb-glyph">◀</span>
+        <span class="mb-label">YES</span>
+        <span class="mb-sub">to lobby</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Close-tab fallback message -->
+<div id="modal-close-tab" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-eyebrow">FAREWELL</div>
+    <h3 class="modal-title">CLOSE TAB</h3>
+    <div class="modal-sub">Please close this tab manually to exit the game.</div>
+    <div class="modal-actions single">
+      <button class="modal-btn ghost" id="btn-close-tab-ack">
+        <span class="mb-label">OK</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="endscreen" class="screen endscreen">
+  <div class="end-content">
+    <div class="end-emblem" id="end-emblem">✦</div>
+    <h2 class="end-title" id="end-title">VICTORY</h2>
+    <div class="end-sub" id="end-sub">AudWeak falls.</div>
+    <button id="btn-return" class="btn-primary">
+      <span class="btn-label">RETURN TO LOBBY</span>
+      <span class="btn-shine"></span>
+    </button>
+  </div>
+</div>
+
+
+<script src="game.js"></script>
+</body>
+</html>
